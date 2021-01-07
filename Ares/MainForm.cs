@@ -18,7 +18,7 @@ namespace Ares
         {
             InitializeComponent();
 
-            List<ListEntity> list = new List<ListEntity>();
+            /*List<ListEntity> list = new List<ListEntity>();
             ListEntity listEntity1 = new ListEntity();
             ListEntity listEntity2 = new ListEntity();
             ListEntity listEntity3 = new ListEntity();
@@ -31,7 +31,7 @@ namespace Ares
             listEntity3.ID = "3";
             listEntity3.Title = "云端参数";
             list.Add(listEntity3);
-            this.ucListExt1.SetList(list);
+            this.ucListExt1.SetList(list);*/
         }
 
         private void button_Exit_Click(object sender, EventArgs e)

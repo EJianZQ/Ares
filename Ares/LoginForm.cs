@@ -376,10 +376,10 @@ namespace Ares
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
-            MainForm hwidResetForm = new MainForm();
+            Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
+            /*MainForm hwidResetForm = new MainForm();
             hwidResetForm.Show();
-            this.Visible = false;
+            this.Visible = false;*/
         }
     }
 }

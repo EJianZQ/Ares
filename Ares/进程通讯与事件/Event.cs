@@ -15,11 +15,8 @@ namespace Ares
 
         public static bool CreateEvent(string lpName)
         {
-            Event.ProgramStarted = new EventWaitHandle(false, EventResetMode.AutoReset, lpName, out bool createNew);
-            if (createNew == true)
-                return true;
-            else
-                return false;
+            Event.ProgramStarted = new EventWaitHandle(false, EventResetMode.AutoReset, lpName, out bool isCreateSuccessfully);
+            return isCreateSuccessfully;
         }
     }
 }
