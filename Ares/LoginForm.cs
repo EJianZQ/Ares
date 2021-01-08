@@ -16,12 +16,16 @@ namespace Ares
 {
     public partial class LoginForm : FrmBase
     {
+        #pragma warning disable IDE0044
         private const string localVersion = "0.99";
         public string hwidResetContent = string.Empty;
         public CloudNotificationData cloudNotificationData;
         public static WebApiUrlData webApiUrlData;
         public static UserLoginData userLoginData = new UserLoginData();
+        public VerifyFunction Verify;
+        #pragma warning restore IDE0044
 
+        #region 登录窗口载入
         /// <summary>
         /// 登录窗口载入
         /// </summary>
@@ -54,6 +58,7 @@ namespace Ares
                 Environment.Exit(0);
             }
             webApiUrlData = JsonConvert.DeserializeObject<WebApiUrlData>(cloudWeiApiJson);//解析Json数据
+            Verify = new VerifyFunction(webApiUrlData);//实例化网络验证对象
 
             //通过Lambda表达式创建线程获取云通知
             Thread cloudNotificationThread = new Thread(() =>
@@ -108,7 +113,7 @@ namespace Ares
 
             //通过Lambda表达式创建线程检测版本更新
             Thread checkVersionThread = new Thread(() => {
-                string result = VerifyFunction.VersionCheck(Decrypt.DES(webApiUrlData.CheckAppVersion, Decrypt.DES(webApiUrlData.Key, "actingnb")), localVersion);
+                string result = Verify.VersionCheck(localVersion);
                 //1为最新版，0为不是最新版，-1为出错
                 //1就直接跳出循环，0载入更新窗口，-1报错然后退出程序
                 //后期预想：0载入更新窗口，窗口中显示新版本更新内容，目前只要弹窗告诉不是最新版然后弹下载地址就好
@@ -138,7 +143,9 @@ namespace Ares
             });
             checkVersionThread.Start();
         }
+        #endregion
 
+        #region 登录按钮被点击
         /// <summary>
         /// 登录按钮被点击
         /// </summary>
@@ -147,10 +154,10 @@ namespace Ares
             ucBtnExt_Login.FillColor = Color.FromArgb(155,155,155);
             ucBtnExt_Login.Enabled = false;
             
-            string ret = VerifyFunction.Login(Decrypt.DES(webApiUrlData.SingleLogin, Decrypt.DES(webApiUrlData.Key, "actingnb")), ucTextBoxEx_Key.InputText, localVersion, IpConfig.GetMac(IpConfig.GetLocalIP()));
-            if (ret.Length == 32)
+            string ret = Verify.Login(ucTextBoxEx_Key.InputText, localVersion, IpConfig.GetMac(IpConfig.GetLocalIP()));
+            if (ret.Length == 32)//登录成功
             {
-
+                
                 //登录按钮消失，进度条取代，进行必要的变量的声明
                 ucBtnExt_Login.Visible = false;
                 ucProcessLine.Visible = true;
@@ -163,7 +170,7 @@ namespace Ares
                     //对userLoginData进行赋值
                     userLoginData.Key = ucTextBoxEx_Key.InputText;
                     userLoginData.StatusCode = ret;
-                    expiredTimeS = VerifyFunction.GetExpired(Decrypt.DES(webApiUrlData.GetExpired, Decrypt.DES(webApiUrlData.Key, "actingnb")), userLoginData.Key);
+                    expiredTimeS = Verify.GetExpired(userLoginData.Key);
                     userLoginData.ExpiredTime = expiredTimeS;
 
                     //取到期时间的时间间隔
@@ -174,7 +181,7 @@ namespace Ares
                     label_Status.Text = String.Format("{0}{1}天{2}时{3}分", "卡密剩余时间：", ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString());
 
                     //核心数据取COS下载数据并解析
-                    string appCode = VerifyFunction.GetAppCore(Decrypt.DES(webApiUrlData.GetAppCode, Decrypt.DES(webApiUrlData.Key, "actingnb")), userLoginData.StatusCode, userLoginData.Key);
+                    string appCode = Verify.GetAppCore(userLoginData.StatusCode, userLoginData.Key);
                     if (appCode == "-1")
                     {
                         FrmDialog.ShowDialog(this, "Ares无法下载核心云端数据\n\n点击\"确定\"按钮退出Ares软件", "Ares - 致命错误");
@@ -313,13 +320,13 @@ namespace Ares
                     {
                         if(hwidResetContent == string.Empty)
                         {
-                            hwidResetContent = VerifyFunction.GetBulletin(Decrypt.DES(webApiUrlData.GetBulletin, Decrypt.DES(webApiUrlData.Key, "actingnb")));
-                            HwidResetForm hwidResetForm = new HwidResetForm(ucTextBoxEx_Key.InputText, hwidResetContent);
+                            hwidResetContent = Verify.GetBulletin();
+                            HwidResetForm hwidResetForm = new HwidResetForm(Verify,ucTextBoxEx_Key.InputText, hwidResetContent);
                             hwidResetForm.ShowDialog();
                         }
                         else
                         {
-                            HwidResetForm hwidResetForm = new HwidResetForm(ucTextBoxEx_Key.InputText, hwidResetContent);
+                            HwidResetForm hwidResetForm = new HwidResetForm(Verify,ucTextBoxEx_Key.InputText, hwidResetContent);
                             hwidResetForm.ShowDialog();
                         }
                         ucBtnExt_Login.FillColor = Color.FromArgb(221, 31, 50);
@@ -342,7 +349,9 @@ namespace Ares
                 }
             }
         }
+        #endregion
 
+        #region 云通知按钮被点击
         /// <summary>
         /// 云通知按钮被点击
         /// </summary>
@@ -373,13 +382,15 @@ namespace Ares
                     }
             }
         }
+        #endregion
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
+            //Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
             /*MainForm hwidResetForm = new MainForm();
             hwidResetForm.Show();
             this.Visible = false;*/
+            //MessageBox.Show(Decrypt.DES("kWxDnuwA+OkLAJ/ohHNfE0eQWT4dWccj4oHrpAGeGuQ=", "latiaonb",3));
         }
     }
 }

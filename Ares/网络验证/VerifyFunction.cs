@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Net;
+using Ares.加解密;
 
 namespace Ares
 {
@@ -128,12 +129,24 @@ namespace Ares
             }
         }
     }
-    class VerifyFunction
+    public class VerifyFunction
     {
+        private static WebApiUrlData webApiUrl { get; set; }
+        public VerifyFunction(WebApiUrlData data)
+        {
+            webApiUrl = data;
+        }
+
+        public VerifyFunction()
+        {
+
+        }
+
+        #region 检测版本更新
         /// <summary>
         /// 检测版本更新，返回1为最新版，0不是最新版，-1出错
         /// </summary>
-        public static string VersionCheck(string ApiUrl,string Version)
+        public string VersionCheck(string Version)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -141,8 +154,7 @@ namespace Ares
             {
                 // 添加待传递参数
                 parameters.Add("1", Version);
-
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.CheckAppVersion, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -151,11 +163,13 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
 
+        #region 获取公告
         /// <summary>
         /// 获取公告，成功返回公告文本，返回-1出错
         /// </summary>
-        public static string GetBulletin(string ApiUrl)
+        public string GetBulletin()
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -163,7 +177,7 @@ namespace Ares
             {
                 parameters.Add("1", "1");//随便传个参进去
 
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.GetBulletin, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -172,11 +186,13 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
 
+        #region 单码登录
         /// <summary>
         /// 登录，成功返回状态码，失败返回错误码
         /// </summary>
-        public static string Login(string ApiUrl,string Key,string Version,string Mac)
+        public string Login(string Key,string Version,string Mac)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -187,7 +203,7 @@ namespace Ares
                 parameters.Add("2", Version);
                 parameters.Add("3", Mac);
 
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.SingleLogin, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -196,11 +212,13 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
 
+        #region 获取到期时间
         /// <summary>
         /// 获取到期时间，失败返回-1
         /// </summary>
-        public static string GetExpired(string ApiUrl,string Key)
+        public string GetExpired(string Key)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -209,7 +227,7 @@ namespace Ares
                 // 添加待传递参数
                 parameters.Add("1", Key);
 
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.GetExpired, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -218,11 +236,13 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
 
+        #region 获取核心数据
         /// <summary>
         /// 获取核心数据，成功返回数据，失败返回-1
         /// </summary>
-        public static string GetAppCore(string ApiUrl,string StatusCode,string Key)
+        public string GetAppCore(string StatusCode,string Key)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -232,7 +252,7 @@ namespace Ares
                 parameters.Add("1", StatusCode);
                 parameters.Add("2", Key);
 
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.GetAppCode, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -241,11 +261,13 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
 
+        #region 机器码解绑
         /// <summary>
         /// 机器码解绑，成功返回1，失败返回错误码
         /// </summary>
-        public static string HwidReset(string ApiUrl,string Key,string NewMac)
+        public string HwidReset(string Key,string NewMac)
         {
             IDictionary<string, string> parameters = new Dictionary<string, string>();
 
@@ -257,7 +279,7 @@ namespace Ares
                 parameters.Add("3", NewMac);
                 parameters.Add("4", "0");
 
-                var ret = WebPost.ApiPost(ApiUrl, parameters);
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.MacChangeBind, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }
@@ -266,5 +288,6 @@ namespace Ares
                 return "-1";
             }
         }
+        #endregion
     }
 }

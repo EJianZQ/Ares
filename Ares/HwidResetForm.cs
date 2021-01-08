@@ -8,9 +8,11 @@ namespace Ares
     {
         public string key;
         public string expiredTimeS;
-        public HwidResetForm(string Key,string HwidResetContent)
+        public VerifyFunction Verify;
+        public HwidResetForm(VerifyFunction ver,string Key,string HwidResetContent)
         {
             key = Key;
+            Verify = ver;
             InitializeComponent();
             textBoxEx_Content.Text = HwidResetContent;
         }
@@ -23,11 +25,11 @@ namespace Ares
 
         private void ucBtnExt_Hwid_BtnClick(object sender, EventArgs e)
         {
-            string ret = VerifyFunction.HwidReset(Decrypt.DES(LoginForm.webApiUrlData.MacChangeBind, Decrypt.DES(LoginForm.webApiUrlData.Key, "actingnb")), key, IpConfig.GetMac(IpConfig.GetLocalIP()));
+            string ret = Verify.HwidReset(key, IpConfig.GetMac(IpConfig.GetLocalIP()));
             if(ret == "1")
             {
                 //解绑成功，查询剩余时间
-                expiredTimeS = VerifyFunction.GetExpired(Decrypt.DES(LoginForm.webApiUrlData.GetExpired, Decrypt.DES(LoginForm.webApiUrlData.Key, "actingnb")), key);
+                expiredTimeS = Verify.GetExpired(key);
                 DateTime expiredTime = Convert.ToDateTime(expiredTimeS);
                 TimeSpan ts = expiredTime.Subtract(DateTime.Now);
                 string expiredTimes = String.Format("{0}{1}天{2}时{3}分", "卡密剩余时间：", ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString());

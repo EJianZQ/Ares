@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Threading;
-using Microsoft.Win32;
-using System.Diagnostics;
 
 namespace Ares
 {
