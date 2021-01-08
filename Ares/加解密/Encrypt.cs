@@ -28,5 +28,24 @@ namespace Ares.加解密
                 return "加密失败";//如果密钥不足8位或解密出错直接返回错误提示
             }
         }
+
+        public static string DES(string encryptString, string encryptKey, UInt32 times)//多重加密
+        {
+            string[] result = new string[times + 1];
+            result[0] = encryptString;
+            try
+            {
+                for (UInt32 i = 1; i < times + 1; i++)
+                {
+                    //Console.WriteLine(i);
+                    result[i] = Encrypt.DES(result[i - 1], encryptKey);
+                }
+                return result[times];
+            }
+            catch
+            {
+                return "加密失败";//如果密钥不足8位或解密出错直接返回错误提示
+            }
+        }
     }
 }
