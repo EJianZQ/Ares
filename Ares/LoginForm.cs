@@ -19,7 +19,8 @@ namespace Ares
         #pragma warning disable IDE0044
         private const string localVersion = "0.99";
         public string hwidResetContent = string.Empty;
-        public CloudNotificationData cloudNotificationData;
+        public static RootData Root;
+        public static CloudNotificationData cloudNotificationData;
         public static WebApiUrlData webApiUrlData;
         public static UserLoginData userLoginData = new UserLoginData();
         public VerifyFunction Verify;
@@ -46,10 +47,10 @@ namespace Ares
             this.InitFormMove(this);
             this.InitFormMove(pictureBox);
 
-            string cloudWeiApiJson = GetData.Get("https://download.3tme.cn/Ares/WebApiUrl.json", true);//获取WeiApi地址原始数据
+            string cloudRoot = GetData.Get("https://download.3tme.cn/Ares/RootData.json", true);//获取WeiApi地址原始数据
 
             //判断取回数据是否有错，有错则报错然后结束进程
-            if (cloudWeiApiJson == "Error" || cloudWeiApiJson == null)
+            if (cloudRoot == "Error" || cloudRoot == null)
             {
                 this.Visible = false;
                 this.Enabled = false;
@@ -57,7 +58,8 @@ namespace Ares
                     System.Diagnostics.Process.Start("https://tz.3tme.cn/error-information/server-connection-failed.html");
                 Environment.Exit(0);
             }
-            webApiUrlData = JsonConvert.DeserializeObject<WebApiUrlData>(cloudWeiApiJson);//解析Json数据
+            Root = JsonConvert.DeserializeObject<RootData>(cloudRoot);//解析Json数据
+            webApiUrlData = Root.WebApiUrlData;//提取Root中的WebApi部分
             Verify = new VerifyFunction(webApiUrlData);//实例化网络验证对象
 
             //读取已保存卡密
@@ -70,43 +72,37 @@ namespace Ares
             //通过Lambda表达式创建线程获取云通知
             Thread cloudNotificationThread = new Thread(() =>
             {
-                string cloudNotificationJson = GetData.Get("https://download.3tme.cn/Ares/CloudNotification.json", true);//获取云通知原始数据
 
-                //判断取回数据是否有错，有错则报错提醒用户无法收到消息
-                if (cloudNotificationJson == "Error" || cloudNotificationJson == null)
-                    FrmDialog.ShowDialog(this, "Ares当前无法获取通知类云端数据\n\n您可能会因此而无法收到管理员推送的程序通知或节假日活动等内容", "Ares - 普通错误");
-                else
+                cloudNotificationData =Root.CloudNotificationData;//提取Root中的cloudNotificationData
+
+                //判断信息框的操作
+                if (cloudNotificationData.MsgBox.Switch =="1")
                 {
-                    cloudNotificationData = JsonConvert.DeserializeObject<CloudNotificationData>(cloudNotificationJson);//解析Json数据
-
-                    //判断信息框的操作
-                    if(cloudNotificationData.MsgBox.Switch =="1")
+                    switch (cloudNotificationData.MsgBox.Type)
                     {
-                        switch (cloudNotificationData.MsgBox.Type)
-                        {
                             case "1":
-                                {
-                                    //仅弹窗提示
-                                    FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*","\n"), cloudNotificationData.MsgBox.Title);
-                                    break;
-                                }
+                        {
+                            //仅弹窗提示
+                            FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*","\n"), cloudNotificationData.MsgBox.Title);
+                                break;
+                        }
 
-                            case "2":
-                                {
-                                    //弹窗提示+是否打开链接
-                                    if (FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*", "\n"), cloudNotificationData.MsgBox.Title, true) == DialogResult.OK)
-                                        System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
-                                    break;
-                                }
+                        case "2":
+                        {
+                            //弹窗提示+是否打开链接
+                            if (FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*", "\n"), cloudNotificationData.MsgBox.Title, true) == DialogResult.OK)
+                                System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
+                                break;
+                        }
 
-                            case "3":
-                                {
-                                    //直接打开链接
-                                    System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
-                                    break;
-                                }
+                        case "3":
+                        {
+                            //直接打开链接
+                            System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
+                            break;
                         }
                     }
+                }
                     
                     //判断按钮的操作，接下来的操作要写在按钮被点击的方法里
                     if (cloudNotificationData.Button.Switch == "1")
@@ -114,7 +110,6 @@ namespace Ares
                         ucBtnExt_CloudNotification.Location = new Point(224,485);//设置按钮位置正常
                         ucBtnExt_CloudNotification.BtnText = cloudNotificationData.Button.Text;
                     }
-                    Console.WriteLine(cloudNotificationData.Label.Switch);
 
                     //判断标签的操作，接下来的操作要写在按钮被点击的方法里
                     if (cloudNotificationData.Label.Switch == "1")
@@ -123,7 +118,6 @@ namespace Ares
                         label_CloudNotification.Text = cloudNotificationData.Label.Text;
                         label_CloudNotification.ForeColor = Color.FromArgb(cloudNotificationData.Label.Color.R, cloudNotificationData.Label.Color.G,cloudNotificationData.Label.Color.B);
                     }
-                }
             });
             cloudNotificationThread.Start();
 
@@ -403,6 +397,7 @@ namespace Ares
         }
         #endregion
 
+        
         private void buttontest_Click(object sender, EventArgs e)
         {
             //Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
@@ -412,6 +407,10 @@ namespace Ares
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
         }
 
+        #region 云通知标签被点击
+        /// <summary>
+        /// 云通知标签被点击
+        /// </summary>
         private void label_CloudNotification_Click(object sender, EventArgs e)
         {
             switch (cloudNotificationData.Label.Type)
@@ -439,5 +438,6 @@ namespace Ares
                     }
             }
         }
+        #endregion
     }
 }
