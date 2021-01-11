@@ -60,6 +60,13 @@ namespace Ares
             webApiUrlData = JsonConvert.DeserializeObject<WebApiUrlData>(cloudWeiApiJson);//解析Json数据
             Verify = new VerifyFunction(webApiUrlData);//实例化网络验证对象
 
+            //读取已保存卡密
+            var uKey = OperateIniFile.ReadIniData("Ares", "Key", "", "logindata.ini");
+            if(uKey.Length > 0)
+            {
+                ucTextBoxEx_Key.InputText = Decrypt.DES(uKey,"areskeys");
+            }
+
             //通过Lambda表达式创建线程获取云通知
             Thread cloudNotificationThread = new Thread(() =>
             {
@@ -179,6 +186,9 @@ namespace Ares
 
                     label_Status.ForeColor = Color.FromArgb(66, 66, 66);
                     label_Status.Text = String.Format("{0}{1}天{2}时{3}分", "卡密剩余时间：", ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString());
+
+                    //写配置文件保存卡密
+                    OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES(userLoginData.Key, Decrypt.DES(webApiUrlData.Key, "actingnb")), "logindata.ini");
 
                     //核心数据取COS下载数据并解析
                     string appCode = Verify.GetAppCore(userLoginData.StatusCode, userLoginData.Key);
@@ -384,13 +394,13 @@ namespace Ares
         }
         #endregion
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttontest_Click(object sender, EventArgs e)
         {
             //Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
             /*MainForm hwidResetForm = new MainForm();
             hwidResetForm.Show();
             this.Visible = false;*/
-            //MessageBox.Show(Decrypt.DES("kWxDnuwA+OkLAJ/ohHNfE0eQWT4dWccj4oHrpAGeGuQ=", "latiaonb",3));
+            //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
         }
     }
 }

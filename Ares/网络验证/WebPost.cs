@@ -55,7 +55,7 @@ namespace Ares
 
                 var html = sr.ReadToEnd();
 
-                //别忘了释放哟
+                //别忘了释放
                 sr.Close(); 
 
                 return html;

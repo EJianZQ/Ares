@@ -79,7 +79,7 @@ namespace Ares
             this.ucTextBoxEx_Key.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.ucTextBoxEx_Key.ForeColor = System.Drawing.Color.Black;
             this.ucTextBoxEx_Key.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            this.ucTextBoxEx_Key.InputText = "LatiaoO110D0B92E7AF086340160B9B1";
+            this.ucTextBoxEx_Key.InputText = "";
             this.ucTextBoxEx_Key.InputType = HZH_Controls.TextInputType.NotControl;
             this.ucTextBoxEx_Key.IsFocusColor = true;
             this.ucTextBoxEx_Key.IsRadius = true;
@@ -207,7 +207,7 @@ namespace Ares
             this.button1.TabIndex = 7;
             this.button1.Text = "功能测试按钮";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.buttontest_Click);
             // 
             // LoginForm
             // 
