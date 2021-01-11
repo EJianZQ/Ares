@@ -106,6 +106,7 @@
     <Compile Include="数据功能与类型\FontsData.cs" />
     <Compile Include="数据功能与类型\GetData.cs" />
     <Compile Include="数据功能与类型\GetMD5.cs" />
+    <Compile Include="数据功能与类型\GetQQNumber.cs" />
     <Compile Include="数据功能与类型\RootData.cs" />
     <Compile Include="数据功能与类型\UpdateVersionData.cs" />
     <Compile Include="数据功能与类型\UserLoginData.cs" />

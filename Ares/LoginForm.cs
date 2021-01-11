@@ -80,7 +80,7 @@ namespace Ares
                 {
                     switch (cloudNotificationData.MsgBox.Type)
                     {
-                            case "1":
+                        case "1":
                         {
                             //仅弹窗提示
                             FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*","\n"), cloudNotificationData.MsgBox.Title);
@@ -92,14 +92,14 @@ namespace Ares
                             //弹窗提示+是否打开链接
                             if (FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*", "\n"), cloudNotificationData.MsgBox.Title, true) == DialogResult.OK)
                                 System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
-                                break;
+                                    break;
                         }
 
                         case "3":
                         {
                             //直接打开链接
                             System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
-                            break;
+                                break;
                         }
                     }
                 }
@@ -405,6 +405,7 @@ namespace Ares
             hwidResetForm.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
+            MessageBox.Show(GetQQNumber.GetOnlineQQ().Count.ToString());
         }
 
         #region 云通知标签被点击
