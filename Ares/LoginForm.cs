@@ -74,45 +74,54 @@ namespace Ares
 
                 //判断取回数据是否有错，有错则报错提醒用户无法收到消息
                 if (cloudNotificationJson == "Error" || cloudNotificationJson == null)
-                    FrmDialog.ShowDialog(this, "Ares当前无法获取通知类云端数据\n\n您可能会因此而无法收到管理员推送的程序通知或节假日活动等内容", "Ares - 错误");
+                    FrmDialog.ShowDialog(this, "Ares当前无法获取通知类云端数据\n\n您可能会因此而无法收到管理员推送的程序通知或节假日活动等内容", "Ares - 普通错误");
                 else
                 {
                     cloudNotificationData = JsonConvert.DeserializeObject<CloudNotificationData>(cloudNotificationJson);//解析Json数据
 
                     //判断信息框的操作
-                    if(cloudNotificationData.MsgBoxSwitch =="1")
+                    if(cloudNotificationData.MsgBox.Switch =="1")
                     {
-                        switch (cloudNotificationData.MsgBoxType)
+                        switch (cloudNotificationData.MsgBox.Type)
                         {
                             case "1":
                                 {
                                     //仅弹窗提示
-                                    FrmDialog.ShowDialog(this, cloudNotificationData.MsgBoxContent.Replace("*","\n"), cloudNotificationData.MsgBoxTitle);
+                                    FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*","\n"), cloudNotificationData.MsgBox.Title);
                                     break;
                                 }
 
                             case "2":
                                 {
                                     //弹窗提示+是否打开链接
-                                    if (FrmDialog.ShowDialog(this, cloudNotificationData.MsgBoxContent.Replace("*", "\n"), cloudNotificationData.MsgBoxTitle, true) == DialogResult.OK)
-                                        System.Diagnostics.Process.Start(cloudNotificationData.MsgBoxLink);
+                                    if (FrmDialog.ShowDialog(this, cloudNotificationData.MsgBox.Content.Replace("*", "\n"), cloudNotificationData.MsgBox.Title, true) == DialogResult.OK)
+                                        System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
                                     break;
                                 }
 
                             case "3":
                                 {
                                     //直接打开链接
-                                    System.Diagnostics.Process.Start(cloudNotificationData.MsgBoxLink);
+                                    System.Diagnostics.Process.Start(cloudNotificationData.MsgBox.Link);
                                     break;
                                 }
                         }
                     }
-
+                    
                     //判断按钮的操作，接下来的操作要写在按钮被点击的方法里
-                    if (cloudNotificationData.BtnSwitch == "1")
+                    if (cloudNotificationData.Button.Switch == "1")
                     {
                         ucBtnExt_CloudNotification.Location = new Point(224,485);//设置按钮位置正常
-                        ucBtnExt_CloudNotification.BtnText = cloudNotificationData.BtnText;
+                        ucBtnExt_CloudNotification.BtnText = cloudNotificationData.Button.Text;
+                    }
+                    Console.WriteLine(cloudNotificationData.Label.Switch);
+
+                    //判断标签的操作，接下来的操作要写在按钮被点击的方法里
+                    if (cloudNotificationData.Label.Switch == "1")
+                    {
+                        label_CloudNotification.Location = new Point(-10, 494);//设置标签可视
+                        label_CloudNotification.Text = cloudNotificationData.Label.Text;
+                        label_CloudNotification.ForeColor = Color.FromArgb(cloudNotificationData.Label.Color.R, cloudNotificationData.Label.Color.G,cloudNotificationData.Label.Color.B);
                     }
                 }
             });
@@ -188,7 +197,7 @@ namespace Ares
                     label_Status.Text = String.Format("{0}{1}天{2}时{3}分", "卡密剩余时间：", ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString());
 
                     //写配置文件保存卡密
-                    OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES(userLoginData.Key, Decrypt.DES(webApiUrlData.Key, "actingnb")), "logindata.ini");
+                    OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES(userLoginData.Key, "areskeys"), "logindata.ini");
 
                     //核心数据取COS下载数据并解析
                     string appCode = Verify.GetAppCore(userLoginData.StatusCode, userLoginData.Key);
@@ -367,27 +376,27 @@ namespace Ares
         /// </summary>
         private void ucBtnExt_CloudNotification_BtnClick(object sender, EventArgs e)
         {
-            switch (cloudNotificationData.BtnType)
+            switch (cloudNotificationData.Button.Type)
             {
                 case "1":
                     {
                         //仅弹窗提示
-                        FrmDialog.ShowDialog(this, cloudNotificationData.BtnContent.Replace("*", "\n"), cloudNotificationData.BtnTitle);
+                        FrmDialog.ShowDialog(this, cloudNotificationData.Button.Content.Replace("*", "\n"), cloudNotificationData.Button.Title);
                         break;
                     }
 
                 case "2":
                     {
                         //弹窗提示+是否打开链接
-                        if (FrmDialog.ShowDialog(this, cloudNotificationData.BtnContent.Replace("*", "\n"), cloudNotificationData.BtnTitle, true) == DialogResult.OK)
-                            System.Diagnostics.Process.Start(cloudNotificationData.BtnLink);
+                        if (FrmDialog.ShowDialog(this, cloudNotificationData.Button.Content.Replace("*", "\n"), cloudNotificationData.Button.Title, true) == DialogResult.OK)
+                            System.Diagnostics.Process.Start(cloudNotificationData.Button.Link);
                         break;
                     }
 
                 case "3":
                     {
                         //直接打开链接
-                        System.Diagnostics.Process.Start(cloudNotificationData.BtnLink);
+                        System.Diagnostics.Process.Start(cloudNotificationData.Button.Link);
                         break;
                     }
             }
@@ -401,6 +410,34 @@ namespace Ares
             hwidResetForm.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
+        }
+
+        private void label_CloudNotification_Click(object sender, EventArgs e)
+        {
+            switch (cloudNotificationData.Label.Type)
+            {
+                case "1":
+                    {
+                        //仅弹窗提示
+                        FrmDialog.ShowDialog(this, cloudNotificationData.Label.Content.Replace("*", "\n"), cloudNotificationData.Label.Title);
+                        break;
+                    }
+
+                case "2":
+                    {
+                        //弹窗提示+是否打开链接
+                        if (FrmDialog.ShowDialog(this, cloudNotificationData.Label.Content.Replace("*", "\n"), cloudNotificationData.Label.Title, true) == DialogResult.OK)
+                            System.Diagnostics.Process.Start(cloudNotificationData.Label.Link);
+                        break;
+                    }
+
+                case "3":
+                    {
+                        //直接打开链接
+                        System.Diagnostics.Process.Start(cloudNotificationData.Label.Link);
+                        break;
+                    }
+            }
         }
     }
 }

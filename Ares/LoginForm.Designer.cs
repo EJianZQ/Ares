@@ -38,6 +38,7 @@ namespace Ares
             this.ucProcessLine = new HZH_Controls.Controls.UCProcessLine();
             this.ucBtnExt_CloudNotification = new HZH_Controls.Controls.UCBtnExt();
             this.button1 = new System.Windows.Forms.Button();
+            this.label_CloudNotification = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -209,12 +210,24 @@ namespace Ares
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.buttontest_Click);
             // 
+            // label_CloudNotification
+            // 
+            this.label_CloudNotification.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label_CloudNotification.Location = new System.Drawing.Point(-1000, -1000);
+            this.label_CloudNotification.Name = "label_CloudNotification";
+            this.label_CloudNotification.Size = new System.Drawing.Size(771, 18);
+            this.label_CloudNotification.TabIndex = 8;
+            this.label_CloudNotification.Text = "云通知标签";
+            this.label_CloudNotification.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label_CloudNotification.Click += new System.EventHandler(this.label_CloudNotification_Click);
+            // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(770, 560);
+            this.Controls.Add(this.label_CloudNotification);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.ucBtnExt_CloudNotification);
             this.Controls.Add(this.ucProcessLine);
@@ -245,6 +258,7 @@ namespace Ares
         private HZH_Controls.Controls.UCProcessLine ucProcessLine;
         private HZH_Controls.Controls.UCBtnExt ucBtnExt_CloudNotification;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label_CloudNotification;
     }
 }
 
