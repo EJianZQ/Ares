@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using System.IO;
 using HZH_Controls.Forms;
 using Newtonsoft.Json;
@@ -405,7 +406,11 @@ namespace Ares
             hwidResetForm.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
-            MessageBox.Show(GetQQNumber.GetOnlineQQ().Count.ToString());
+            /*List<string> s = GetQQNumber.GetOnlineQQ();
+            foreach(string i in s)
+            {
+                MessageBox.Show(i);
+            }*/
         }
 
         #region 云通知标签被点击
