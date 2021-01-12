@@ -406,11 +406,11 @@ namespace Ares
             hwidResetForm.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
-            /*List<string> s = GetQQNumber.GetOnlineQQ();
+            List<string> s = GetQQNumber.GetLocalQQ();
             foreach(string i in s)
             {
                 MessageBox.Show(i);
-            }*/
+            }
         }
 
         #region 云通知标签被点击

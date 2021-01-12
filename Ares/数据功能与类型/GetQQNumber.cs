@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.IO;
 
 namespace Ares
 {
@@ -93,6 +94,31 @@ namespace Ares
             }
             else
                 return numberList;
+        }
+
+        public static List<string> GetLocalQQ()
+        {
+            List<string> result = new List<string>();
+            try
+            { 
+                DirectoryInfo dirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Tencent Files");
+                DirectoryInfo[] dirSub = dirInfo.GetDirectories();
+                if (dirSub.Length > 0)
+                {
+                    foreach (DirectoryInfo d in dirSub)
+                    {
+                        result.Add(d.Name);
+                    }
+                    result.Remove("All Users");//最后要删去All Users这个无用文件夹
+                    return result;
+                }
+                else
+                    return result;
+            }
+            catch
+            {
+                return result;
+            }
         }
     }
 }
