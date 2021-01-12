@@ -10,6 +10,12 @@ namespace Ares
 {
     class GetData
     {
+        /// <summary>
+        /// Get方法
+        /// </summary>
+        /// <param name="Url">欲获取的链接</param>
+        /// <param name="ifSSL">是否启用Https</param>
+        /// <returns></returns>
         public static string Get(string Url,bool ifSSL)
         {
             if(ifSSL == true)
@@ -51,6 +57,13 @@ namespace Ares
             }
         }
 
+        /// <summary>
+        /// Post方法
+        /// </summary>
+        /// <param name="Url"></param>
+        /// <param name="Data"></param>
+        /// <param name="Referer"></param>
+        /// <returns></returns>
         public static string Post(string Url, string Data, string Referer)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
@@ -78,6 +91,35 @@ namespace Ares
                 request.Abort();
             }
             return retString;
+        }
+
+        /// <summary>
+        /// 带Authorization认证的Get方法
+        /// </summary>
+        public static string Get (string Url,string username,string password)
+        {
+            try
+            {
+                string usernamePassword = username + ":" + password; //格式"username:password"
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(Url));
+                CredentialCache cache = new CredentialCache();
+                cache.Add(new Uri(Url), "Basic", new NetworkCredential(username, password));
+                request.Credentials = cache;
+                request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(new ASCIIEncoding().GetBytes(usernamePassword)));
+                WebResponse response = request.GetResponse();
+                Stream receiveStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(receiveStream, Encoding.UTF8);
+                string content = reader.ReadToEnd();
+                //关闭文件流
+                response.Close();
+                receiveStream.Close();
+                reader.Close();
+                return content;
+            }
+            catch
+            {
+                return "Error";
+            }
         }
     }
 }

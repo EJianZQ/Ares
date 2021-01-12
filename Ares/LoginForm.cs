@@ -406,11 +406,33 @@ namespace Ares
             hwidResetForm.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
-            List<string> s = GetQQNumber.GetLocalQQ();
-            foreach(string i in s)
+            /*List<string> s1 = GetQQNumber.GetLocalQQ();
+            List<string> s2 = GetQQNumber.GetOnlineQQ();
+            string ss = string.Empty;
+            ss = ss + "当前已登录QQ：\n";
+            if (s2.Count > 0)
             {
-                MessageBox.Show(i);
+                foreach (string i in s2)
+                {
+                    ss = ss + i + "\n";
+                }
             }
+            else
+                ss = ss + "当前无在线QQ\n";
+
+            ss = ss + "本地登录过的QQ：\n";
+            if (s1.Count > 0)
+            {
+                foreach (string i in s1)
+                {
+                    ss = ss + i + "\n";
+                }
+            }
+            else
+                ss = ss + "当前无本地QQ\n";*/
+
+            MessageBox.Show(GetData.Get("https://download.3tme.cn/Ares/InternalAuthority/test.txt","latiaogg","latiaohaoshuai"));
+
         }
 
         #region 云通知标签被点击
