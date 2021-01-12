@@ -74,7 +74,7 @@ namespace Ares
         }
         #endregion
 
-
+        #region 获取用户QQ号
         /// <summary>
         /// 获取已登录的QQ客户端的QQ号，若存在则返回QQ号字符串集合，不存在则返回空集合
         /// </summary>
@@ -96,6 +96,9 @@ namespace Ares
                 return numberList;
         }
 
+        /// <summary>
+        /// 获取当前电脑上登录过的QQ的QQ号，若存在则返回QQ号字符串集合，不存在则返回空集合
+        /// </summary>
         public static List<string> GetLocalQQ()
         {
             List<string> result = new List<string>();
@@ -120,5 +123,6 @@ namespace Ares
                 return result;
             }
         }
+        #endregion
     }
 }
