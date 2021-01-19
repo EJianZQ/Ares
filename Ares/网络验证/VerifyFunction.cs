@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Net;
+using System.Management;
 using Ares.加解密;
 
 namespace Ares
@@ -51,9 +52,48 @@ namespace Ares
     class IpConfig
     {
         /// <summary>
+        /// Management类取MAC地址，无需传参
+        /// </summary>
+        public static string GetMac()
+        {
+            var mac = "";
+            var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+            var moc = mc.GetInstances();
+            foreach (var o in moc)
+            {
+                var mo = (ManagementObject)o;
+                if (!(bool)mo["IPEnabled"]) continue;
+                mac = mo["MacAddress"].ToString();
+                break;
+            }
+            return mac;
+        }
+
+        /// <summary>
+        /// Management类取本机IP
+        /// </summary>
+        /// <returns></returns>
+        public static string GetLocalIP()
+        {
+            var ip = string.Empty;
+            var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+            var moc = mc.GetInstances();
+            foreach (var o in moc)
+            {
+                var mo = (ManagementObject)o;
+                if (!(bool)mo["IPEnabled"]) continue;
+                var ar = (Array)(mo.Properties["IpAddress"].Value);
+                ip = ar.GetValue(0).ToString();
+                break;
+            }
+            return ip;
+        }
+
+
+        /// <summary>
         /// 取MAC地址，传入本机IP
         /// </summary>
-        public static string GetMac(string remoteIP)
+        public static string GetMac_Ex(string remoteIP)
         {
             StringBuilder macAddress = new StringBuilder();
             try
@@ -92,7 +132,7 @@ namespace Ares
         /// <summary>
         /// 取本机IP
         /// </summary>
-        public static string GetLocalIP()
+        public static string GetLocalIP_Ex()
         {
             //得到本机的主机名
             string strHostName = Dns.GetHostName();
@@ -129,17 +169,72 @@ namespace Ares
             }
         }
     }
+
+    class SystemConfig
+    {
+        /// <summary>
+        /// 获取硬盘序列号
+        /// </summary>
+        public static string GetDiskSerialNumber()
+        {
+            //这种模式在插入一个U盘后可能会有不同的结果，如插入U盘时
+            //只能取第一个物理硬盘的序列号
+            try
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PhysicalMedia");
+                string strHardDiskID = null;
+                foreach (ManagementObject mo in searcher.Get())
+                {
+                    strHardDiskID = mo["SerialNumber"].ToString().Trim();
+
+                    break;
+                }
+                return strHardDiskID;
+            }
+            catch
+            {
+                return "";
+            }
+
+        }
+
+        /// <summary>
+        /// 获取CPU序列号
+        /// </summary>
+        public static string GetCpuID()
+        {
+            var cpuid = string.Empty;
+            var mc = new ManagementClass("Win32_Processor");
+            var moc = mc.GetInstances();
+            foreach (var o in moc)
+            {
+                var mo = (ManagementObject)o;
+                cpuid = mo.Properties["ProcessorId"].Value.ToString();
+            }
+            return cpuid;
+        }
+
+        /// <summary>
+        /// 获取主板编号
+        /// </summary>
+        public static string GetBoardId()
+        {
+            var boardId = string.Empty;
+            var mos = new ManagementObjectSearcher("Select * from Win32_BaseBoard");
+            foreach (var o in mos.Get())
+            {
+                var mo = (ManagementObject)o;
+                boardId = mo["SerialNumber"].ToString();
+            }
+            return boardId;
+        }
+    }
     public class VerifyFunction
     {
         private static WebApiUrlData webApiUrl { get; set; }
         public VerifyFunction(WebApiUrlData data)
         {
             webApiUrl = data;
-        }
-
-        public VerifyFunction()
-        {
-
         }
 
         #region 检测版本更新
@@ -280,6 +375,32 @@ namespace Ares
                 parameters.Add("4", "0");
 
                 var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.MacChangeBind, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
+
+                return ret;
+            }
+            catch
+            {
+                return "-1";
+            }
+        }
+        #endregion
+
+        #region 设置用户数据
+        /// <summary>
+        /// 设置用户数据，成功返回1，失败返回错误码
+        /// </summary>
+        public string SetUserData(string StatusCode, string Key,string Content)
+        {
+            IDictionary<string, string> parameters = new Dictionary<string, string>();
+
+            try
+            {
+                // 添加待传递参数
+                parameters.Add("1", StatusCode);
+                parameters.Add("2", Key);
+                parameters.Add("3", Content);
+
+                var ret = WebPost.ApiPost(Decrypt.DES(webApiUrl.SetUserData, Decrypt.DES(webApiUrl.Key, "actingnb")), parameters);
 
                 return ret;
             }

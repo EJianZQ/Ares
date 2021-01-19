@@ -25,7 +25,7 @@ namespace Ares
 
         private void ucBtnExt_Hwid_BtnClick(object sender, EventArgs e)
         {
-            string ret = Verify.HwidReset(key, IpConfig.GetMac(IpConfig.GetLocalIP()));
+            string ret = Verify.HwidReset(key, IpConfig.GetMac());
             if(ret == "1")
             {
                 //解绑成功，查询剩余时间

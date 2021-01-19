@@ -212,6 +212,7 @@ namespace Ares
             // 
             // label_CloudNotification
             // 
+            this.label_CloudNotification.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label_CloudNotification.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label_CloudNotification.Location = new System.Drawing.Point(-1000, -1000);
             this.label_CloudNotification.Name = "label_CloudNotification";

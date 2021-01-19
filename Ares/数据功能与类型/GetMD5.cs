@@ -27,7 +27,7 @@ namespace Ares
                 }
                 return sb.ToString().ToUpper();
             }
-            catch (Exception ex)
+            catch
             {
                 //throw new Exception(ex.Message);
                 return "-1";

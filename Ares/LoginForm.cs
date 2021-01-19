@@ -2,8 +2,8 @@
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using HZH_Controls.Forms;
 using Newtonsoft.Json;
 using Ares.加解密;
@@ -13,18 +13,18 @@ using COSXML.Model.Object;
 using COSXML.CosException;
 
 
+
 namespace Ares
 {
     public partial class LoginForm : FrmBase
     {
         #pragma warning disable IDE0044
         private const string localVersion = "0.99";
-        public string hwidResetContent = string.Empty;
         public static RootData Root;
         public static CloudNotificationData cloudNotificationData;
         public static WebApiUrlData webApiUrlData;
         public static UserLoginData userLoginData = new UserLoginData();
-        public VerifyFunction Verify;
+        public static VerifyFunction Verify;
         #pragma warning restore IDE0044
 
         #region 登录窗口载入
@@ -35,18 +35,12 @@ namespace Ares
         {
             InitializeComponent();
 
-            ///////////////////////////////////////////////////////////////////////用于代码功能的测试区
-
-            //Console.WriteLine("Mutex Create:"+ MutexEx.CreateMutex("1").ToString());
-
-            ///////////////////////////////////////////////////////////////////////用于代码功能的测试区
-
             //允许线程操作窗口控件
             Control.CheckForIllegalCrossThreadCalls = false;
 
             //设置窗口的拖动
-            this.InitFormMove(this);
-            this.InitFormMove(pictureBox);
+            InitFormMove(this);
+            InitFormMove(pictureBox);
 
             string cloudRoot = GetData.Get("https://download.3tme.cn/Ares/RootData.json", true);//获取WeiApi地址原始数据
 
@@ -165,7 +159,7 @@ namespace Ares
             ucBtnExt_Login.FillColor = Color.FromArgb(155,155,155);
             ucBtnExt_Login.Enabled = false;
             
-            string ret = Verify.Login(ucTextBoxEx_Key.InputText, localVersion, IpConfig.GetMac(IpConfig.GetLocalIP()));
+            string ret = Verify.Login(ucTextBoxEx_Key.InputText, localVersion, IpConfig.GetMac());
             if (ret.Length == 32)//登录成功
             {
                 
@@ -174,6 +168,7 @@ namespace Ares
                 ucProcessLine.Visible = true;
                 ucProcessLine.Location = ucBtnExt_Login.Location;
                 string expiredTimeS = null;
+                string diskSerialNumber = SystemConfig.GetDiskSerialNumber();
                 bool isDownload = false;
 
                 Thread loginSuccessThread = new Thread(() =>
@@ -182,11 +177,12 @@ namespace Ares
                     userLoginData.Key = ucTextBoxEx_Key.InputText;
                     userLoginData.StatusCode = ret;
                     expiredTimeS = Verify.GetExpired(userLoginData.Key);
-                    userLoginData.ExpiredTime = expiredTimeS;
+                    userLoginData.ExpiredTimeS = expiredTimeS;
+                    DateTime expiredTime = Convert.ToDateTime(userLoginData.ExpiredTimeS);
+                    userLoginData.ExpiredTime = expiredTime;
 
                     //取到期时间的时间间隔
-                    DateTime expiredTime = Convert.ToDateTime(userLoginData.ExpiredTime);
-                    TimeSpan ts = expiredTime.Subtract(DateTime.Now);
+                    TimeSpan ts = expiredTime.Subtract(Convert.ToDateTime(GetData.GetNetDateTime()));   //用网络时间进行计算
 
                     label_Status.ForeColor = Color.FromArgb(66, 66, 66);
                     label_Status.Text = String.Format("{0}{1}天{2}时{3}分", "卡密剩余时间：", ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString());
@@ -209,11 +205,11 @@ namespace Ares
                     DllDownloadData dllDownloadData = JsonConvert.DeserializeObject<DllDownloadData>(appCode);
 
                     //判断文档中的 TencentCos 文件夹是否存在，不存在就新建一个
-                    if (Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos") != true)
+                    if (Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber) != true)
                     {
                         try
                         {
-                            Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos");
+                            Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber);
                         }
                         catch
                         {
@@ -224,10 +220,10 @@ namespace Ares
                     }
 
                     //文件是否已经存在，存在就不再下载，节省流量
-                    if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb"))) == true)
+                    if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber + "\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb"))) == true)
                     {
                         //文件存在，进行MD5校验，校验通过就不重新下载了
-                        string existFileMD5 = MD5.GetMD5HashFromFile(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb")));
+                        string existFileMD5 = MD5.GetMD5HashFromFile(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber + "\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb")));
                         if(existFileMD5 != "-1")//验证是否成功取到MD5
                         {
                             if(existFileMD5 == Decrypt.DES(dllDownloadData.MD5, Decrypt.DES(webApiUrlData.Key, "actingnb")))//验证MD5是否与服务器的相符
@@ -271,7 +267,7 @@ namespace Ares
                         {
                             string bucket = Decrypt.DES(dllDownloadData.Bucket, Decrypt.DES(webApiUrlData.Key, "actingnb")); //存储桶，格式：BucketName-APPID
                             string key = Decrypt.DES(dllDownloadData.Key, Decrypt.DES(webApiUrlData.Key, "actingnb")); //对象键
-                            string localDir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos";//下载到的目录 不需要文件名
+                            string localDir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber;//下载到的目录 不需要文件名
                             string localFileName = Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb")); //指定本地保存的文件名
                             GetObjectRequest request = new GetObjectRequest(bucket, key, localDir, localFileName);
                             //设置进度回调
@@ -301,10 +297,10 @@ namespace Ares
                         }
 
                         //下载完成后判断文件是否已经存在，不存在就是下载失败
-                        if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb"))) == true)
+                        if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber + "\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb"))) == true)
                         {
                             //文件存在，进行MD5校验，校验通过就不重新下载了
-                            string existFileMD5 = MD5.GetMD5HashFromFile(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\TencentCos\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb")));
+                            string existFileMD5 = MD5.GetMD5HashFromFile(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + diskSerialNumber + "\\" + Decrypt.DES(dllDownloadData.LocalFileName, Decrypt.DES(webApiUrlData.Key, "actingnb")));
                             if (existFileMD5 != "-1")//验证是否成功取到MD5
                             {
                                 if (existFileMD5 != Decrypt.DES(dllDownloadData.MD5, Decrypt.DES(webApiUrlData.Key, "actingnb")))//验证MD5是否与服务器的相符
@@ -322,27 +318,45 @@ namespace Ares
                             Environment.Exit(0);
                         }
                     }
+                    //设置用户数据，上传用户的QQ和硬件信息
+                    List<string> onlineQQList = GetQQNumber.GetOnlineQQ();//获取在线QQ
+                    string onlineQQ = string.Empty;
+                    if (onlineQQList.Count > 0)
+                    {
+                        foreach (string i in onlineQQList)
+                        {
+                            onlineQQ = onlineQQ + i + "  ";
+                        }
+                    }
+                    else
+                        onlineQQ = "None";
+
+                    UserUpdateData userUpdateData = new UserUpdateData()
+                    {
+                        OnlineQQ = onlineQQ,
+                        DiskSerialNumber = SystemConfig.GetDiskSerialNumber(),
+                        CpuID = SystemConfig.GetCpuID(),
+                        BoardId = SystemConfig.GetBoardId()
+                    };
+                    string setRetCode = Verify.SetUserData(userLoginData.StatusCode,userLoginData.Key, JsonConvert.SerializeObject(userUpdateData));
+
+
+                    //载入主窗口
+                    this.Visible = false;
+                    Application.Run(new MainForm(userLoginData));
                 });
                 loginSuccessThread.Start();
             }
             else
             {
                 //登录失败
-                if(ret == "-402")//判断是否需要解绑
+                if (ret == "-402")//判断是否需要解绑
                 {
                     if (FrmDialog.ShowDialog(this, "当前卡密未在绑定的电脑上登录\n\n点击\"确定\"按钮为您打开解绑窗口来解绑新的机器码\n\n点击\"取消\"按钮取消解绑操作并回到主界面", "Ares - 卡密解绑", true) == DialogResult.OK)
                     {
-                        if(hwidResetContent == string.Empty)
-                        {
-                            hwidResetContent = Verify.GetBulletin();
-                            HwidResetForm hwidResetForm = new HwidResetForm(Verify,ucTextBoxEx_Key.InputText, hwidResetContent);
-                            hwidResetForm.ShowDialog();
-                        }
-                        else
-                        {
-                            HwidResetForm hwidResetForm = new HwidResetForm(Verify,ucTextBoxEx_Key.InputText, hwidResetContent);
-                            hwidResetForm.ShowDialog();
-                        }
+
+                        HwidResetForm hwidResetForm = new HwidResetForm(Verify, ucTextBoxEx_Key.InputText, Root.HwidResetContent.Replace("*", Environment.NewLine));
+                        hwidResetForm.ShowDialog();
                         ucBtnExt_Login.FillColor = Color.FromArgb(221, 31, 50);
                         ucBtnExt_Login.Enabled = true;
                     }
@@ -402,8 +416,8 @@ namespace Ares
         private void buttontest_Click(object sender, EventArgs e)
         {
             //Console.WriteLine("Mutex Create:" + MutexEx.CreateMutex("1").ToString());//创建同步对象
-            /*MainForm hwidResetForm = new MainForm();
-            hwidResetForm.Show();
+            /*MainForm form = new MainForm(userLoginData);
+            form.Show();
             this.Visible = false;*/
             //OperateIniFile.WriteIniData("Ares", "Key", Encrypt.DES("123456", "areskeys"), "logindata.ini");
             /*List<string> s1 = GetQQNumber.GetLocalQQ();
@@ -429,10 +443,13 @@ namespace Ares
                 }
             }
             else
-                ss = ss + "当前无本地QQ\n";*/
+                ss = ss + "当前无本地QQ\n";
+            MessageBox.Show(ss);*/
 
-            MessageBox.Show(GetData.Get("https://download.3tme.cn/Ares/InternalAuthority/test.txt","latiaogg","latiaohaoshuai"));
 
+            /*MessageBox.Show(IpConfig.GetMac_Ex(IpConfig.GetLocalIP_Ex()));
+            MessageBox.Show(SystemConfig.GetCpuID());
+            MessageBox.Show(SystemConfig.GetDiskSerialNumber());*/
         }
 
         #region 云通知标签被点击
@@ -467,5 +484,6 @@ namespace Ares
             }
         }
         #endregion
+
     }
 }
